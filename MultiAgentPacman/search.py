@@ -150,6 +150,22 @@ def aStarSearch(problem, heuristic=nullHeuristic):
             frontier.push((successor, newActions), problem.getCostOfActions(newActions) + heuristic(successor, problem))
     return []
 
+def closestAStarSearch(problem, closestDot, heuristic=util.manhattanDistance):
+    """Search the node that has the lowest combined cost and heuristic first."""
+    explored = []
+    frontier = util.PriorityQueue()
+    frontier.push((problem.getStartState(), []), heuristic(problem.getStartState(), closestDot))
+    while(not frontier.isEmpty()):
+        currentNode, actions = frontier.pop()
+        if(currentNode in explored):
+            continue
+        explored.append(currentNode)
+        if(problem.isGoalState(currentNode)):
+            return actions
+        for successor, action, successorCost in problem.getSuccessors(currentNode):
+            newActions = actions + [action]
+            frontier.push((successor, newActions), problem.getCostOfActions(newActions) + heuristic(successor, closestDot))
+    return []
 
 # Abbreviations
 bfs = breadthFirstSearch
