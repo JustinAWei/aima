@@ -152,22 +152,27 @@ class MyAgent(Agent):
         space = range(int(width*(self.index) / numPacmen), int(width*(self.index+1) / numPacmen))
 
         if self.finished:
-            # print(self.index, 'finished')
+            print(self.index, 'finished')
             return self.findPathToClosestDot(state)[0]
 
         elif startPosition[0] in space:
-            # print(self.index, True)
-            spaceDot = self.findPathToClosestDotInSpace(state)
-            if spaceDot:
-                return spaceDot[0]
+            print(self.index, True)
+            if self.pathToSpaceDot and self.pathToSpaceDotIndex < len(self.pathToSpaceDot)-1:
+                self.pathToSpaceDotIndex+=1
+                return self.pathToSpaceDot[self.pathToSpaceDotIndex]
             else:
-                self.finished = True
-                return self.findPathToClosestDot(state)[0]
+                self.pathToSpaceDot = self.findPathToClosestDotInSpace(state)
+                if(self.pathToSpaceDot):
+                    self.pathToSpaceDotIndex = 0
+                    return self.pathToSpaceDot[self.pathToSpaceDotIndex]
+                else:
+                    self.finished = True
+                    return self.findPathToClosestDot(state)[0]
         else:
+            # print(self.index, False)
             if self.pathToSpace:
                 self.pathToSpaceIndex+=1
                 return self.pathToSpace[self.pathToSpaceIndex]
-            # print(self.index, False)
             else:
                 self.pathToSpaceIndex = 0
                 self.pathToSpace = self.findPathToSpace(state)
@@ -180,6 +185,9 @@ class MyAgent(Agent):
         leave it blank
         """
         self.pathToSpace = []
+        self.pathToSpaceDot = []
+        self.pathToDot = []
+
         self.finished = False
 
 """
