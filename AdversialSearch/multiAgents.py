@@ -4,7 +4,7 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -69,12 +69,27 @@ class ReflexAgent(Agent):
         # Useful information you can extract from a GameState (pacman.py)
         successorGameState = currentGameState.generatePacmanSuccessor(action)
         newPos = successorGameState.getPacmanPosition()
-        newFood = successorGameState.getFood()
+        newFood = successorGameState.getFood().asList()
+        newCapsules = successorGameState.getCapsules()
         newGhostStates = successorGameState.getGhostStates()
+        newGhostPositions = successorGameState.getGhostPositions()
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
-        "*** YOUR CODE HERE ***"
-        return successorGameState.getScore()
+        distanceFromNearestFood = min([util.manhattanDistance(newPos, food) for food in newFood]) if newFood else 0
+        # distanceFromNearestCapsule = min([util.manhattanDistance(newPos, capsule) for capsule in newCapsules]) if newCapsules else 0
+        distanceFromGhosts = min([util.manhattanDistance(newPos, ghost) for ghost in newGhostPositions]) if newGhostPositions else 5
+
+        # Eating reward - try to eat food
+        eatingReward = 1/(len(newFood + newCapsules)+1)
+
+        # Food proximity reward - try get closer to food
+        foodproximityReward = 1/(distanceFromNearestFood+1)
+
+        # Ghost Avoidance - try to keep at least 2 distance from ghost
+        ghostAvoidanceReward = distanceFromGhosts > 2
+        scared = newScaredTimes[0]
+
+        return 100*ghostAvoidanceReward + 1000*eatingReward + foodproximityReward + successorGameState.getScore()
 
 def scoreEvaluationFunction(currentGameState):
     """
