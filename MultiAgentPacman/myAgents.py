@@ -30,21 +30,40 @@ class MyAgent(Agent):
     """
     Implementation of your agent.
     """
-    def findPathToClosestDot(self, gameState, space=None):
+    def findPathToClosestDot(self, gameState, sector=None):
         """
         Returns a path (a list of actions) to the closest dot, starting from
         gameState.
         """
-        # Here are some useful elements of the startState
+
         startPosition = gameState.getPacmanPosition(self.index)
         problem = AnyFoodSearchProblem(gameState, self.index)
         foodList = gameState.getFood().asList()
-        searchSpace = [food for food in foodList if food[0] in space] if space else foodList
+
+        # Find closest food in sector
+        searchSpace = [food for food in foodList if food[0] in sector] if sector else foodList
+
         if searchSpace:
             _, closestDot = min([(util.manhattanDistance(startPosition, food), food) for food in searchSpace])
         else:
             return False
-        return search.closestAStarSearch(problem, closestDot)
+
+        # A* Search for path to specified food using Manhattan Heuristic
+        heuristic = util.manhattanDistance
+        explored = []
+        frontier = util.PriorityQueue()
+        frontier.push((problem.getStartState(), []), heuristic(problem.getStartState(), closestDot))
+        while(not frontier.isEmpty()):
+            currentNode, actions = frontier.pop()
+            if(currentNode in explored):
+                continue
+            explored.append(currentNode)
+            if(currentNode == closestDot):
+                return actions
+            for successor, action, successorCost in problem.getSuccessors(currentNode):
+                newActions = actions + [action]
+                frontier.push((successor, newActions), problem.getCostOfActions(newActions) + heuristic(successor, closestDot))
+        return []
 
     def getAction(self, state):
         """
@@ -52,16 +71,20 @@ class MyAgent(Agent):
         """
         width = state.getWidth()
         numPacmen = state.getNumPacmanAgents()
-        spaceStart = int(width*(self.index) / numPacmen)
-        spaceEnd = int(width*(self.index + 1) / numPacmen)
-        space = range(spaceStart, spaceEnd)
 
+        # Give each agent a sector of the map
+        sectorStart = int(width*(self.index) / numPacmen)
+        sectorEnd = int(width*(self.index + 1) / numPacmen)
+        sector = range(sectorStart, sectorEnd)
+
+        # Generate path
         if not self.path:
-            self.path = self.findPathToClosestDot(state) if self.clean else self.findPathToClosestDot(state, space)
+            self.path = self.findPathToClosestDot(state) if self.sectorClean else self.findPathToClosestDot(state, sector)
+        # Agent has cached path, execute it
         if self.path:
             return self.path.pop(0)
         else:
-            self.clean = True
+            self.sectorClean = True
             return self.getAction(state)
         return 'Stop'
 
@@ -73,7 +96,7 @@ class MyAgent(Agent):
         leave it blank
         """
         self.path = []
-        self.clean = False
+        self.sectorClean = False
 
 """
 Put any other SearchProblems or search methods below. You may also import classes/methods in
@@ -119,7 +142,7 @@ class AnyFoodSearchProblem(PositionSearchProblem):
     A search problem for finding a path to any food.
 
     This search problem is just like the PositionSearchProblem, but has a
-    different goal test, which you need to fill in below.  The state space and
+    different goal test, which you need to fill in below.  The state sector and
     successor function do not need to be changed.
 
     The class definition above, AnyFoodSearchProblem(PositionSearchProblem),
