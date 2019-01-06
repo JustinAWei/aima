@@ -30,20 +30,19 @@ class MyAgent(Agent):
     """
     Implementation of your agent.
     """
-    def findPathToClosestDot(self, gameState, space=range(0,1000)):
+    def findPathToClosestDot(self, gameState, space=None):
         """
         Returns a path (a list of actions) to the closest dot, starting from
         gameState.
         """
         # Here are some useful elements of the startState
         startPosition = gameState.getPacmanPosition(self.index)
-        food = gameState.getFood()
         problem = AnyFoodSearchProblem(gameState, self.index)
-
-        try:
-            _, closestDot = min([(util.manhattanDistance(startPosition, food), food) for food in food.asList() if food[0] in space])
-        except ValueError:
-            print("Agent {} finished food!".format(self.index))
+        foodList = gameState.getFood().asList()
+        searchSpace = [food for food in foodList if food[0] in space] if space else foodList
+        if searchSpace:
+            _, closestDot = min([(util.manhattanDistance(startPosition, food), food) for food in searchSpace])
+        else:
             return False
         return search.closestAStarSearch(problem, closestDot)
 
@@ -51,33 +50,21 @@ class MyAgent(Agent):
         """
         Returns the next action the agent will take
         """
-        startPosition = state.getPacmanPosition(self.index)
-        food = state.getFood()
-        walls = state.getWalls()
-        problem = AnyFoodSearchProblem(state, self.index)
         width = state.getWidth()
         numPacmen = state.getNumPacmanAgents()
-        space = range(int(width*(self.index) / numPacmen), int(width*(self.index+1) / numPacmen))
+        spaceStart = int(width*(self.index) / numPacmen)
+        spaceEnd = int(width*(self.index + 1) / numPacmen)
+        space = range(spaceStart, spaceEnd)
 
-        if self.spaceClean:
-            print(self.index, 'finished')
-            return self.findPathToClosestDot(state)[0]
-
-        # Exists a unfulfiled cached version of actions to a dot in space
-        if self.pathToSpaceDot and self.pathToSpaceDotIndex < len(self.pathToSpaceDot)-1:
-            self.pathToSpaceDotIndex+=1
-            return self.pathToSpaceDot[self.pathToSpaceDotIndex]
+        if not self.path:
+            self.path = self.findPathToClosestDot(state) if self.clean else self.findPathToClosestDot(state, space)
+        if self.path:
+            return self.path.pop(0)
         else:
-            # Generate new path
-            self.pathToSpaceDot = self.findPathToClosestDot(state, space)
-            if(self.pathToSpaceDot):
-                self.pathToSpaceDotIndex = 0
-                return self.pathToSpaceDot[self.pathToSpaceDotIndex]
-            else:
-                # TODO: No valid paths left, search the whole map
-                return 'Stop'
-                #self.spaceClean = True
-                #return self.findPathToClosestDot(state)[0]
+            self.clean = True
+            return self.getAction(state)
+        return 'Stop'
+
 
     def initialize(self):
         """
@@ -85,8 +72,8 @@ class MyAgent(Agent):
         when the agent is first created. If you don't need to use it, then
         leave it blank
         """
-        self.pathToSpaceDot = []
-        self.spaceClean = False
+        self.path = []
+        self.clean = False
 
 """
 Put any other SearchProblems or search methods below. You may also import classes/methods in

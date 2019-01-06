@@ -160,7 +160,7 @@ def closestAStarSearch(problem, closestDot, heuristic=util.manhattanDistance):
         if(currentNode in explored):
             continue
         explored.append(currentNode)
-        if(problem.isGoalState(currentNode)):
+        if(currentNode == closestDot):
             return actions
         for successor, action, successorCost in problem.getSuccessors(currentNode):
             newActions = actions + [action]
