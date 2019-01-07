@@ -59,8 +59,8 @@ class ReflexAgent(Agent):
         GameStates (pacman.py) and returns a number, where higher numbers are better.
 
         The code below extracts some useful information from the state, like the
-        remaining food (newFood) and Pacman position after moving (newPos).
-        newScaredTimes holds the number of moves that each ghost will remain
+        remaining food (Food) and Pacman position after moving (Pos).
+        ScaredTimes holds the number of moves that each ghost will remain
         scared because of Pacman having eaten a power pellet.
 
         Print out these variables to see what you're getting, then combine them
@@ -68,26 +68,26 @@ class ReflexAgent(Agent):
         """
         # Useful information you can extract from a GameState (pacman.py)
         successorGameState = currentGameState.generatePacmanSuccessor(action)
-        newPos = successorGameState.getPacmanPosition()
-        newFood = successorGameState.getFood().asList()
-        newCapsules = successorGameState.getCapsules()
-        newGhostStates = successorGameState.getGhostStates()
-        newGhostPositions = successorGameState.getGhostPositions()
-        newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
+        Pos = successorGameState.getPacmanPosition()
+        Food = successorGameState.getFood().asList()
+        Capsules = successorGameState.getCapsules()
+        GhostStates = successorGameState.getGhostStates()
+        GhostPositions = successorGameState.getGhostPositions()
+        ScaredTimes = [ghostState.scaredTimer for ghostState in GhostStates]
 
-        distanceFromNearestFood = min([util.manhattanDistance(newPos, food) for food in newFood]) if newFood else 0
-        # distanceFromNearestCapsule = min([util.manhattanDistance(newPos, capsule) for capsule in newCapsules]) if newCapsules else 0
-        distanceFromGhosts = min([util.manhattanDistance(newPos, ghost) for ghost in newGhostPositions]) if newGhostPositions else 5
+        distanceFromNearestFood = min([util.manhattanDistance(Pos, food) for food in Food]) if Food else 0
+        # distanceFromNearestCapsule = min([util.manhattanDistance(Pos, capsule) for capsule in Capsules]) if Capsules else 0
+        distanceFromGhosts = min([util.manhattanDistance(Pos, ghost) for ghost in GhostPositions]) if GhostPositions else 5
 
         # Eating reward - try to eat food
-        eatingReward = 1/(len(newFood + newCapsules)+1)
+        eatingReward = 1/(len(Food + Capsules)+1)
 
         # Food proximity reward - try get closer to food
         foodproximityReward = 1/(distanceFromNearestFood+1)
 
         # Ghost Avoidance - try to keep at least 2 distance from ghost
         ghostAvoidanceReward = distanceFromGhosts > 2
-        scared = newScaredTimes[0]
+        scared = ScaredTimes[0]
 
         return 100*ghostAvoidanceReward + 1000*eatingReward + foodproximityReward + successorGameState.getScore()
 
@@ -203,9 +203,9 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             depth+=1
         for action in state.getLegalActions(index):
             successor = state.generateSuccessor(index, action)
-            newV = self.value(successor, nextIndex, depth, a, b)
-            if v < newV:
-                v = newV
+            V = self.value(successor, nextIndex, depth, a, b)
+            if v < V:
+                v = V
                 bestAction = action
             if v > b:
                 return v
@@ -298,8 +298,30 @@ def betterEvaluationFunction(currentGameState):
 
     DESCRIPTION: <write something here so we know what you did>
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
 
+    Pos = currentGameState.getPacmanPosition()
+    Food = currentGameState.getFood().asList()
+    Capsules = currentGameState.getCapsules()
+    GhostStates = currentGameState.getGhostStates()
+    GhostPositions = currentGameState.getGhostPositions()
+    ScaredTimes = [ghostState.scaredTimer for ghostState in GhostStates]
+
+    distanceFromNearestFood = min([util.manhattanDistance(Pos, food) for food in Food+Capsules]) if Food else 0
+    # distanceFromNearestCapsule = min([util.manhattanDistance(Pos, capsule) for capsule in Capsules]) if Capsules else 0
+    distanceFromGhosts = min([util.manhattanDistance(Pos, ghost) for ghost in GhostPositions]) if GhostPositions else 5
+
+    # Eating Score - try to eat food
+    eatingScore = 1/(len(Food + Capsules)+1)
+
+    # Food proximity Score - try get closer to food
+    foodproximityScore = 1/(distanceFromNearestFood+1)
+
+    # Ghost Avoidance - try to keep at least 2 distance from ghost
+    scared = ScaredTimes[0]
+    ghostScore = distanceFromGhosts if not scared else 1/distanceFromGhosts
+
+    score = 100*currentGameState.getScore() + scared*1000*ghostScore + 1000*eatingScore + 10*foodproximityScore
+    # print(score)
+    return score
 # Abbreviation
 better = betterEvaluationFunction
