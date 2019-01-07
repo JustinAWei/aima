@@ -57,6 +57,7 @@ class ReflexCaptureAgent(CaptureAgent):
         self.start = gameState.getAgentPosition(self.index)
         CaptureAgent.registerInitialState(self, gameState)
         self.depth = 1
+        self.numStartingFood = len(self.getFood(gameState).asList())
 
     def chooseAction(self, gameState):
         """
@@ -151,6 +152,11 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
     opponentStates = [gameState.getAgentState(i) for i in opponentIndices]
     scaredTimes = [state.scaredTimer for state in opponentStates]
 
+    numCurrentFood = len(foodList)
+    _, nearestOwnFood = min([(self.getMazeDistance(pos, food),food) for food in self.getFoodYouAreDefending(gameState).asList()])
+    eatenFood = self.numStartingFood - numCurrentFood
+    distanceToHome = self.getMazeDistance(pos, nearestOwnFood)
+    features['goHomeScore'] = eatenFood * distanceToHome
     features['nearestOpponent'] = min([self.getMazeDistance(pos, opponentPos) for opponentPos in opponentPositions]) > 2
     features['eatingScore'] = len(foodList + capsules)
     features['capsuleScore'] = (len(capsules) + 1)
@@ -165,7 +171,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
     Normally, weights do not depend on the gamestate.  They can be either
     a counter or a dictionary.
     """
-    return {'successorScore': 100, 'nearestOpponent': 10, 'eatingScore': -100, 'distanceToFood': -10, 'nearestVictim': -100, 'capsuleScore':-10, 'foodScore':-1}
+    return {'goHomeScore':-100, 'successorScore': 100, 'nearestOpponent': 10, 'eatingScore': -1000, 'distanceToFood': -10, 'nearestVictim': -100, 'capsuleScore':-100, 'foodScore':-1}
 
 
 class DefensiveReflexAgent(ReflexCaptureAgent):
@@ -189,7 +195,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
 
     # Computes distance to invaders we can see
     enemies = [successor.getAgentState(i) for i in self.getOpponents(successor)]
-    invaders = [a for a in enemies if a.isPacman and a.getPosition() != None]
+    invaders = [a for a in enemies]# if a.isPacman and a.getPosition() != None]
     features['numInvaders'] = len(invaders)
     if len(invaders) > 0:
       dists = [self.getMazeDistance(myPos, a.getPosition()) for a in invaders]
