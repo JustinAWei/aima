@@ -153,7 +153,6 @@ class MinimaxAgent(MultiAgentSearchAgent):
         startingIndex = 0
         actions = gameState.getLegalActions(startingIndex)
         results = [(gameState.generateSuccessor(0, action), action) for action in actions]
-        v = -float('inf')
         v, action = max([(self.value(state, startingIndex + 1, 0), action) for state, action in results])
         return action
 
@@ -192,8 +191,47 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
         Returns the minimax action using self.depth and self.evaluationFunction
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        startingIndex = 0
+        actions = gameState.getLegalActions(startingIndex)
+        results = [(gameState.generateSuccessor(0, action), action) for action in actions]
+        return self.maxValue(gameState, startingIndex, 0, -float('inf'), float('inf'))
+
+        v, action = max([(self.value(state, startingIndex + 1, 0, -float('inf'), float('inf')), action) for state, action in results])
+        return action
+
+    def value(self, state, index, depth, a, b):
+        if depth == self.depth or state.isWin() or state.isLose():
+            return self.evaluationFunction(state)
+        elif index == 0:
+            return self.maxValue(state, index, depth, a, b)
+        else:
+            return self.minValue(state, index, depth, a, b)
+
+    def maxValue(self, state, index, depth, a, b):
+        v = -float('inf')
+        nextIndex = (index+1) % state.getNumAgents()
+        if nextIndex == 0:
+            depth+=1
+        for action in state.getLegalActions(index):
+            successor = state.generateSuccessor(index, action)
+            v = max(v, self.value(successor, nextIndex, depth, a, b))
+            if v > b:
+                return v
+            a = max(a,v)
+        return v
+
+    def minValue(self, state, index, depth, a, b):
+        v = float('inf')
+        nextIndex = (index+1) % state.getNumAgents()
+        if nextIndex == 0:
+            depth+=1
+        for action in state.getLegalActions(index):
+            successor = state.generateSuccessor(index, action)
+            v = min(v, self.value(successor, nextIndex, depth, a, b))
+            if v < a:
+                return v
+            b = min(b,v)
+        return v
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
