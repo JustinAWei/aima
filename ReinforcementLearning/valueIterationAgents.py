@@ -173,4 +173,51 @@ class PrioritizedSweepingValueIterationAgent(AsynchronousValueIterationAgent):
         ValueIterationAgent.__init__(self, mdp, discount, iterations)
 
     def runValueIteration(self):
-        "*** YOUR CODE HERE ***"
+        # Compute predecessors of all states.
+        predecessors = {}
+        states = [s for s in self.mdp.getStates() if s != 'TERMINAL_STATE']
+        for state in states:
+            actions = self.mdp.getPossibleActions(state)
+            for action in actions:
+                transitionStates = [s for s,_ in self.mdp.getTransitionStatesAndProbs(state, action)]
+                for nextState in transitionStates:
+                    if nextState not in predecessors:
+                        predecessors[nextState] = set()
+                    predecessors[nextState].add(state)
+
+        # Initialize an empty priority queue.
+        pq = util.PriorityQueue()
+
+        # For each non-terminal state s, do:
+        for s in states:
+            # Find the absolute value of the difference between the current value of s in self.values and the highest Q-value across all possible actions from s
+            actions = self.mdp.getPossibleActions(s)
+            maxQ = max([self.computeQValueFromValues(s, action) for action in actions])
+            diff = abs(self.values[s] - maxQ)
+
+            # Push s into the priority queue with priority -diff
+            pq.push(s, -diff)
+
+        # For iteration in 0, 1, 2, ..., self.iterations - 1, do:
+        for _ in range(self.iterations):
+            # If the priority queue is empty, then terminate.
+            if pq.isEmpty():
+                break
+
+            # Pop a state s off the priority queue.
+            s = pq.pop()
+
+            # Update s's value (if it is not a terminal state) in self.values.
+            actions = self.mdp.getPossibleActions(s)
+            self.values[s] = max([self.computeQValueFromValues(s, action) for action in actions])
+
+            # For each predecessor p of s, do:
+            for p in predecessors[s]:
+                # Find the absolute value of the difference between the current value of p in self.values and the highest Q-value across all possible actions from p (this represents what the value should be); call this number diff.
+                actions = self.mdp.getPossibleActions(p)
+                maxQ = max([self.computeQValueFromValues(p, action) for action in actions])
+                diff = abs(self.values[p] - maxQ)
+
+                # If diff > theta, push p into the priority queue with priority -diff (note that this is negative), as long as it does not already exist in the priority queue with equal or lower priority.
+                if diff > self.theta:
+                    pq.update(p, -diff)
