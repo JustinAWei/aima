@@ -75,6 +75,8 @@ class DiscreteDistribution(dict):
         {}
         """
         t = self.total()
+        if t == 0:
+            return
         for k in self.keys():
             self[k] = self[k]/t
 
@@ -287,9 +289,11 @@ class ExactInference(InferenceModule):
         current position. However, this is not a problem, as Pacman's current
         position is known.
         """
-        "*** YOUR CODE HERE ***"
-        raiseNotDefined()
 
+        p = gameState.getPacmanPosition()
+        j = self.getJailPosition()
+        for g in self.allPositions:
+            self.beliefs[g] *= self.getObservationProb(observation, p, g, j)
         self.beliefs.normalize()
 
     def elapseTime(self, gameState):
