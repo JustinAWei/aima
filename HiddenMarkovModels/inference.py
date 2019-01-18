@@ -375,6 +375,18 @@ class ParticleFilter(InferenceModule):
         Sample each particle's next state based on its current state and the
         gameState.
         """
+        newBeliefDist = DiscreteDistribution()
+        beliefDist = self.getBeliefDistribution()
+        for oldPos in self.legalPositions:
+            if beliefDist[oldPos] == 0:
+                continue
+            newPosDist = self.getPositionDistribution(gameState, oldPos)
+            for newPos, prob in newPosDist.items():
+                newBeliefDist[newPos] += beliefDist[oldPos] * prob
+        self.particles = [newBeliefDist.sample() for _ in range(self.numParticles)]
+
+        # for i, oldPos in enumerate(self.particles):
+        #     self.particles[i] = self.getPositionDistribution(gameState, oldPos).sample()
 
     def getBeliefDistribution(self):
         """
