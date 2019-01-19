@@ -17,6 +17,7 @@ import random
 import busters
 import game
 
+from functools import reduce
 from util import manhattanDistance, raiseNotDefined
 
 
@@ -426,11 +427,13 @@ class JointParticleFilter(ParticleFilter):
         should be evenly distributed across positions in order to ensure a
         uniform prior.
         """
-        self.particles = []
-        "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+        possible = list(itertools.product(self.legalPositions, repeat=self.numGhosts))
+        random.shuffle(possible)
+        n = self.numParticles/len(possible) + 1
+        self.particles = (int(n)*possible)[:self.numParticles]
 
     def addGhostAgent(self, agent):
+
         """
         Each ghost agent is registered separately and stored (in case they are
         different).
@@ -460,8 +463,18 @@ class JointParticleFilter(ParticleFilter):
         be reinitialized by calling initializeUniformly. The total method of
         the DiscreteDistribution may be useful.
         """
-        "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+        p = gameState.getPacmanPosition()
+        beliefDist = DiscreteDistribution()
+        for particle in self.particles:
+            prob = 1
+            for i in range(self.numGhosts):
+                prob *= self.getObservationProb(observation[i], p, particle[i], self.getJailPosition(i))
+            beliefDist[particle] += prob
+
+        if beliefDist.total() == 0:
+            self.initializeUniformly(gameState)
+        else:
+            self.particles = [beliefDist.sample() for _ in range(self.numParticles)]
 
     def elapseTime(self, gameState):
         """
