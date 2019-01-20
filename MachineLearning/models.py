@@ -199,11 +199,24 @@ class LanguageIDModel(object):
         # combined alphabets of the five languages contain a total of 47 unique
         # characters.
         # You can refer to self.num_chars or len(self.languages) in your code
+
+        # 100, -.01, 100 -> 79%
+        # 100, -.01, 150 -> 74%
+        # 100, -.01, 200 -> 77%
+        # 100, -.007, 200 -> 74%
+        # 2, -.005, 400 -> 80%
+
+        self.batch_size = 100
+        self.learning_rate = -.01
         self.num_chars = 47
         self.languages = ["English", "Spanish", "Finnish", "Dutch", "Polish"]
+        self.num_classes = len(self.languages)
+        self.hidden_size = 400
 
         # Initialize your model parameters here
-        "*** YOUR CODE HERE ***"
+        self.W = nn.Parameter(self.num_chars, self.hidden_size)
+        self.W_hidden = nn.Parameter(self.hidden_size, self.hidden_size)
+        self.W_last = nn.Parameter(self.hidden_size, self.num_classes)
 
     def run(self, xs):
         """
@@ -234,7 +247,11 @@ class LanguageIDModel(object):
             A node with shape (batch_size x 5) containing predicted scores
                 (also called logits)
         """
-        "*** YOUR CODE HERE ***"
+        h = nn.Linear(xs[0], self.W)
+        for i in range(1, len(xs)):
+            h = nn.Add(nn.Linear(xs[i], self.W), nn.Linear(h, self.W_hidden))
+        return nn.Linear(h, self.W_last)
+
 
     def get_loss(self, xs, y):
         """
@@ -250,10 +267,17 @@ class LanguageIDModel(object):
             y: a node with shape (batch_size x 5)
         Returns: a loss node
         """
-        "*** YOUR CODE HERE ***"
+        return nn.SoftmaxLoss(self.run(xs), y)
 
     def train(self, dataset):
         """
         Trains the model.
         """
-        "*** YOUR CODE HERE ***"
+        for x, y in dataset.iterate_forever(self.batch_size):
+            loss = self.get_loss(x, y)
+            gradients = nn.gradients(loss, [self.W, self.W_hidden, self.W_last])
+            self.W.update(gradients[0], self.learning_rate)
+            self.W_hidden.update(gradients[1], self.learning_rate)
+            self.W_last.update(gradients[2], self.learning_rate)
+            # print(dataset.get_validation_accuracy())
+            if dataset.get_validation_accuracy() >= .81:    return
