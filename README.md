@@ -17,7 +17,7 @@ Reflex Agent, Minimax, Alpha-Beta Pruning, Expectimax, Evaluation Functions
 
 
 ## [Project 3 - Reinforcement Learning](https://github.com/JustinAWei/aima/tree/master/ReinforcementLearning)
-Policies, Asynchronous Value Iteration, Prioritized Sweeping Value Iteration, Q-Learning, Epsilon Greedy, Q-Learning, Approximate Q-Learning
+Policies, Asynchronous Value Iteration, Prioritized Sweeping Value Iteration, Q-Learning, Epsilon Greedy, Approximate Q-Learning
 
 [GridworldValues]: https://github.com/JustinAWei/aima/blob/master/media/GridworldValues.png "GridworldValues"
 ![][GridworldValues]
@@ -26,32 +26,34 @@ Policies, Asynchronous Value Iteration, Prioritized Sweeping Value Iteration, Q-
 ![][GridworldQValues]
 
 ## [Project 4 - Ghostbusters](https://github.com/JustinAWei/aima/tree/master/HiddenMarkovModels)
-Observation Probability, Exact Inference, Approximate Inference, Joint Particle Filtering
+Exact Inference, Approximate Inference, Joint Particle Filtering
 
 [DualGhostHMMInference]: https://github.com/JustinAWei/aima/blob/master/media/DualGhostHMMInference.png "DualGhostHMMInference"
-![][DualGhostHMMInference]
 
 [HMMInference]: https://github.com/JustinAWei/aima/blob/master/media/HMMInference.png "HMMInference"
-![][HMMInference]
-
-[JointHMMInference]: https://github.com/JustinAWei/aima/blob/master/media/JointHMMInference.png "JointHMMInference"
-![][JointHMMInference]
+![][HMMInference] ![][DualGhostHMMInference]
 
 [QuadGhostsHMMInference]: https://github.com/JustinAWei/aima/blob/master/media/QuadGhostsHMMInference.png "QuadGhostsHMMInference"
 ![][QuadGhostsHMMInference]
 
 
 ## [Project 5 - Machine Learning](https://github.com/JustinAWei/aima/tree/master/MachineLearning)
-Perceptrons, Non-linear Regression, Digit Classification, Language Identification
+
+### Perceptrons
 
 [Perceptron]: https://github.com/JustinAWei/aima/blob/master/media/Perceptron.png "Perceptron"
-![][Perceptron]
+![Perceptron][Perceptron]
+
+### Non-linear Regression
 
 [SineApprox]: https://github.com/JustinAWei/aima/blob/master/media/SineApprox.png "SineApprox"
-![][SineApprox]
+![SineApprox][SineApprox]
+
+### Digit Classification
 
 [DigitClassification]: https://github.com/JustinAWei/aima/blob/master/media/DigitClassification.png "DigitClassification"
-![][DigitClassification]
+![DigitClassification][DigitClassification]
 
+### Language Identification
 [LanguageIdModel]: https://github.com/JustinAWei/aima/blob/master/media/LanguageIdModel.png "LanguageIdModel"
-![][LanguageIdModel]
+![LanguageIdModel][LanguageIdModel]
