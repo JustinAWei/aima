@@ -120,7 +120,26 @@ class DigitClassificationModel(object):
     """
     def __init__(self):
         # Initialize your model parameters here
-        "*** YOUR CODE HERE ***"
+        self.learning_rate = -.5
+        self.batch_size = 500
+        h1 = 256
+        h2 = 256
+        h3 = 32
+
+        self.layers = []
+        self.layers.append(nn.Parameter(784, h1))
+        self.layers.append(nn.Parameter(1, h1))
+
+        self.layers.append(nn.Parameter(h1, h2))
+        self.layers.append(nn.Parameter(1,h2))
+
+        self.layers.append(nn.Parameter(h2, h3))
+        self.layers.append(nn.Parameter(1,h3))
+
+        self.layers.append(nn.Parameter(h3,10))
+        self.layers.append(nn.Parameter(1,10))
+
+        self.numLayers = len(self.layers)
 
     def run(self, x):
         """
@@ -136,7 +155,10 @@ class DigitClassificationModel(object):
             A node with shape (batch_size x 10) containing predicted scores
                 (also called logits)
         """
-        "*** YOUR CODE HERE ***"
+        res = nn.ReLU(nn.AddBias(nn.Linear(x, self.layers[0]), self.layers[1]))
+        res = nn.ReLU(nn.AddBias(nn.Linear(res, self.layers[2]), self.layers[3]))
+        res = nn.ReLU(nn.AddBias(nn.Linear(res, self.layers[4]), self.layers[5]))
+        return nn.AddBias(nn.Linear(res, self.layers[-2]), self.layers[-1])
 
     def get_loss(self, x, y):
         """
@@ -151,13 +173,18 @@ class DigitClassificationModel(object):
             y: a node with shape (batch_size x 10)
         Returns: a loss node
         """
-        "*** YOUR CODE HERE ***"
+        return nn.SoftmaxLoss(self.run(x), y)
 
     def train(self, dataset):
         """
         Trains the model.
         """
-        "*** YOUR CODE HERE ***"
+        for x, y in dataset.iterate_forever(self.batch_size):
+            loss = self.get_loss(x, y)
+            gradients = nn.gradients(loss, self.layers)
+            for i in range(self.numLayers):
+                self.layers[i].update(gradients[i], self.learning_rate)
+            if dataset.get_validation_accuracy() >= .975:    return
 
 class LanguageIDModel(object):
     """
